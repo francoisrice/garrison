@@ -1,5 +1,19 @@
 "use client";
 import { Fragment, useState } from "react";
+import {
+	Flex,
+	Title,
+	Icon,
+	TabGroup,
+	TabList,
+	Tab,
+	AreaChart,
+	Text,
+	Color,
+	Card,
+	List,
+	ListItem,
+} from "@tremor/react";
 import { Dialog, Menu, Transition } from "@headlessui/react";
 import {
 	Bars3Icon,
@@ -16,6 +30,7 @@ import {
 import {
 	ChevronDownIcon,
 	MagnifyingGlassIcon,
+	InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 
 const navigation = [
@@ -40,8 +55,130 @@ function classNames(...classes: any) {
 	return classes.filter(Boolean).join(" ");
 }
 
-export default function Example() {
+const usNumberformatter = (number: number, decimals = 0) =>
+	Intl.NumberFormat("us", {
+		minimumFractionDigits: decimals,
+		maximumFractionDigits: decimals,
+	})
+		.format(Number(number))
+		.toString();
+
+const formatters: { [key: string]: any } = {
+	Sales: (number: number) => `$ ${usNumberformatter(number)}`,
+	Profit: (number: number) => `$ ${usNumberformatter(number)}`,
+	Customers: (number: number) => `${usNumberformatter(number)}`,
+	Delta: (number: number) => `${usNumberformatter(number, 2)}%`,
+};
+
+const Kpis = {
+	Sales: "Sales",
+	Profit: "Profit",
+	Customers: "Customers",
+};
+
+const kpiList = [Kpis.Sales, Kpis.Profit, Kpis.Customers];
+
+export type DailyPerformance = {
+	date: string;
+	Sales: number;
+	Profit: number;
+	Customers: number;
+};
+
+export const performance: DailyPerformance[] = [
+	{
+		date: "2023-05-01",
+		Sales: 900.73,
+		Profit: 173,
+		Customers: 73,
+	},
+	{
+		date: "2023-05-02",
+		Sales: 1000.74,
+		Profit: 174.6,
+		Customers: 74,
+	},
+	{
+		date: "2023-05-03",
+		Sales: 1100.93,
+		Profit: 293.1,
+		Customers: 293,
+	},
+	{
+		date: "2023-05-04",
+		Sales: 1200.9,
+		Profit: 290.2,
+		Customers: 29,
+	},
+];
+
+const cities = [
+	{
+		city: "Athens",
+		rating: "2 open PR",
+	},
+	{
+		city: "Luzern",
+		rating: "1 open PR",
+	},
+	{
+		city: "Zürich",
+		rating: "0 open PR",
+	},
+	{
+		city: "Vienna",
+		rating: "1 open PR",
+	},
+	{
+		city: "Ermatingen",
+		rating: "0 open PR",
+	},
+	{
+		city: "Lisbon",
+		rating: "0 open PR",
+	},
+	{
+		city: "Athens",
+		rating: "2 open PR",
+	},
+	{
+		city: "Luzern",
+		rating: "1 open PR",
+	},
+	{
+		city: "Zürich",
+		rating: "0 open PR",
+	},
+	{
+		city: "Vienna",
+		rating: "1 open PR",
+	},
+	{
+		city: "Ermatingen",
+		rating: "0 open PR",
+	},
+	{
+		city: "Lisbon",
+		rating: "0 open PR",
+	},
+];
+
+export default () => {
 	const [sidebarOpen, setSidebarOpen] = useState(false);
+
+	const [selectedIndex, setSelectedIndex] = useState(0);
+	const selectedKpi = kpiList[selectedIndex];
+
+	const areaChartArgs = {
+		className: "mt-5 h-72",
+		data: performance,
+		index: "date",
+		categories: [selectedKpi],
+		colors: ["blue"] as Color[],
+		showLegend: false,
+		valueFormatter: formatters[selectedKpi],
+		yAxisWidth: 56,
+	};
 
 	return (
 		<>
@@ -314,11 +451,70 @@ export default function Example() {
 						</div>
 					</div>
 
-					<main className="py-10">
-						<div className="px-4 sm:px-6 lg:px-8">{/* Your content */}</div>
+					<main className="py-6">
+						<div className="px-4 sm:px-6 lg:px-8 lg:flex lg:flex-1">
+							{/*  */}
+							{/* Content goes here */}
+							<Card className="min-w-md max-w-xl md:max-w-none md:my-4 lg:h-[800px] lg:mx-4">
+								<h1 className="text-2xl mb-6">Trades</h1>
+								<List>
+									{cities.map((item) => (
+										<ListItem key={item.city}>
+											<span>{item.city}</span>
+											<span>{item.rating}</span>
+											<span>{item.rating}</span>
+											<span>{item.rating}</span>
+										</ListItem>
+									))}
+								</List>
+							</Card>
+							<Card className="md:my-4 lg:mx-4 lg:h-[450px]">
+								<div className="md:flex justify-between">
+									<div>
+										<Flex
+											className="space-x-0.5"
+											justifyContent="start"
+											alignItems="center">
+											<h1 className="  text-2xl">Performance History</h1>
+											<Icon
+												icon={InformationCircleIcon}
+												variant="simple"
+												tooltip="Shows daily increase or decrease of particular domain"
+											/>
+										</Flex>
+										<Text> Daily change per domain </Text>
+									</div>
+									<div>
+										<TabGroup
+											index={selectedIndex}
+											onIndexChange={setSelectedIndex}>
+											<TabList color="gray" variant="solid">
+												<Tab>Sales</Tab>
+												<Tab>Profit</Tab>
+												<Tab>Customers</Tab>
+											</TabList>
+										</TabGroup>
+									</div>
+								</div>
+								{/* web */}
+								<div className="mt-8 hidden sm:block">
+									<AreaChart {...areaChartArgs} />
+								</div>
+								{/* mobile */}
+								<div className="mt-8 sm:hidden">
+									<AreaChart
+										{...areaChartArgs}
+										startEndOnly={true}
+										showGradient={false}
+										showYAxis={false}
+									/>
+								</div>
+							</Card>
+							{/*  */}
+						</div>
 					</main>
 				</div>
 			</div>
 		</>
 	);
-}
+};
