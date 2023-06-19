@@ -36,22 +36,29 @@ import {
 	InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 
+interface Trade {
+	exitDatetime: Date;
+	entryDatetime: Date;
+	mode: string;
+	entryPrice: number;
+	entryAmountUSD: number;
+	profitAbsolute: number;
+	exitPrice: number;
+	algo: string;
+	_id: string;
+	profitPercent: number;
+}
+
 const navigation = [
-	{ name: "Dashboard", href: "#", icon: HomeIcon, current: true },
-	{ name: "Team", href: "#", icon: UsersIcon, current: false },
-	{ name: "Projects", href: "#", icon: FolderIcon, current: false },
-	{ name: "Calendar", href: "#", icon: CalendarIcon, current: false },
-	{ name: "Documents", href: "#", icon: DocumentDuplicateIcon, current: false },
-	{ name: "Reports", href: "#", icon: ChartPieIcon, current: false },
+	{ name: "Example", href: "#", current: false },
+	{ name: "New Monthly High", href: "#", current: true },
+	{ name: "3 MA Crossover", href: "#", current: false },
+	{ name: "BB Reversal 1min", href: "#", current: false },
 ];
 const teams = [
-	{ id: 1, name: "Heroicons", href: "#", initial: "H", current: false },
-	{ id: 2, name: "Tailwind Labs", href: "#", initial: "T", current: false },
-	{ id: 3, name: "Workcation", href: "#", initial: "W", current: false },
-];
-const userNavigation = [
-	{ name: "Your profile", href: "#" },
-	{ name: "Sign out", href: "#" },
+	{ id: 1, name: "Heroicons", href: "#", current: false },
+	{ id: 2, name: "Tailwind Labs", href: "#", current: false },
+	{ id: 3, name: "Workcation", href: "#", current: false },
 ];
 
 function classNames(...classes: any) {
@@ -225,6 +232,17 @@ const fetcher = ([url, algo]: [string, string]) =>
 		},
 	}).then((res) => res.json());
 
+const isSearchEnabled = () => {
+	const searchFeatureFlag = process.env.PUBLIC_SEARCH_ENABLED;
+	if (
+		searchFeatureFlag?.toUpperCase().includes("T") ||
+		searchFeatureFlag?.toUpperCase().includes("Y")
+	) {
+		return true;
+	}
+	return false;
+};
+
 export default () => {
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 	const [selectedAlgo, setSelectedAlgo] = useState("example");
@@ -233,16 +251,17 @@ export default () => {
 	const selectedKpi = kpiList[selectedIndex];
 
 	const { data, error, isLoading } = useSWR(["/api/", selectedAlgo], fetcher);
-	console.log(data);
 
-	// if (error) return <div>failed to load</div>;
-	// if (isLoading) return <div>Loading...</div>;
+	if (error) return <div>failed to load</div>;
+	if (isLoading) return <div>Loading...</div>;
 
 	const areaChartArgs = {
 		className: "mt-5 h-72",
-		data: performance,
-		index: "date",
-		categories: [selectedKpi],
+		// data: performance,
+		data,
+		index: "exitDatetime",
+		// categories: [selectedKpi],
+		categories: ["profitAbsolute"],
 		colors: ["blue"] as Color[],
 		showLegend: false,
 		valueFormatter: formatters[selectedKpi],
@@ -312,8 +331,8 @@ export default () => {
 										<div className="flex h-16 shrink-0 items-center">
 											<img
 												className="h-8 w-auto"
-												src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-												alt="Your Company"
+												src="Sureshot-final_RGB-b.png"
+												alt="Sureshot"
 											/>
 										</div>
 										<nav className="flex flex-1 flex-col">
@@ -330,15 +349,6 @@ export default () => {
 																			: "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
 																		"group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
 																	)}>
-																	<item.icon
-																		className={classNames(
-																			item.current
-																				? "text-indigo-600"
-																				: "text-gray-400 group-hover:text-indigo-600",
-																			"h-6 w-6 shrink-0"
-																		)}
-																		aria-hidden="true"
-																	/>
 																	{item.name}
 																</a>
 															</li>
@@ -346,8 +356,8 @@ export default () => {
 													</ul>
 												</li>
 												<li>
-													<div className="text-xs font-semibold leading-6 text-gray-400">
-														Your teams
+													<div className="text-lg font-semibold leading-6">
+														BTC Chimera
 													</div>
 													<ul role="list" className="-mx-2 mt-2 space-y-1">
 														{teams.map((team) => (
@@ -361,13 +371,14 @@ export default () => {
 																		"group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
 																	)}>
 																	<span
-																		className={classNames(
-																			team.current
-																				? "text-indigo-600 border-indigo-600"
-																				: "text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600",
-																			"flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white"
-																		)}>
-																		{team.initial}
+																	// className={classNames(
+																	// 	team.current
+																	// 		? "text-indigo-600 border-indigo-600"
+																	// 		: "text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600",
+																	// 	"flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white"
+																	// )}
+																	>
+																		{/* {team.initial} */}
 																	</span>
 																	<span className="truncate">{team.name}</span>
 																</a>
@@ -401,9 +412,9 @@ export default () => {
 					<div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4">
 						<div className="flex h-16 shrink-0 items-center">
 							<img
-								className="h-8 w-auto"
-								src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-								alt="Your Company"
+								className="h-10 w-auto"
+								src="Sureshot-final_RGB-b.png"
+								alt="Sureshot Capital"
 							/>
 						</div>
 						<nav className="flex flex-1 flex-col">
@@ -420,15 +431,6 @@ export default () => {
 															: "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
 														"group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
 													)}>
-													<item.icon
-														className={classNames(
-															item.current
-																? "text-indigo-600"
-																: "text-gray-400 group-hover:text-indigo-600",
-															"h-6 w-6 shrink-0"
-														)}
-														aria-hidden="true"
-													/>
 													{item.name}
 												</a>
 											</li>
@@ -436,8 +438,8 @@ export default () => {
 									</ul>
 								</li>
 								<li>
-									<div className="text-xs font-semibold leading-6 text-gray-400">
-										Your teams
+									<div className="text-xl leading-6 text-black">
+										BTC-Chimera
 									</div>
 									<ul role="list" className="-mx-2 mt-2 space-y-1">
 										{teams.map((team) => (
@@ -450,15 +452,7 @@ export default () => {
 															: "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
 														"group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
 													)}>
-													<span
-														className={classNames(
-															team.current
-																? "text-indigo-600 border-indigo-600"
-																: "text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600",
-															"flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white"
-														)}>
-														{team.initial}
-													</span>
+													<span>{/* small spacing before team name */}</span>
 													<span className="truncate">{team.name}</span>
 												</a>
 											</li>
@@ -498,39 +492,53 @@ export default () => {
 						/>
 
 						<div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-							<form className="relative flex flex-1" action="#" method="GET">
-								<label htmlFor="search-field" className="sr-only">
-									Search
-								</label>
-								<MagnifyingGlassIcon
-									className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-gray-400"
-									aria-hidden="true"
-								/>
-								<input
-									id="search-field"
-									className="block h-full w-full border-0 py-0 pl-8 pr-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
-									placeholder="Search..."
-									type="search"
-									name="search"
-								/>
-							</form>
+							{isSearchEnabled() && (
+								<form className="relative flex flex-1" action="#" method="GET">
+									<label htmlFor="search-field" className="sr-only">
+										Search
+									</label>
+									<MagnifyingGlassIcon
+										className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-gray-400"
+										aria-hidden="true"
+									/>
+									<input
+										id="search-field"
+										className="block h-full w-full border-0 py-0 pl-8 pr-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
+										placeholder="Search..."
+										type="search"
+										name="search"
+									/>
+								</form>
+							)}
 							<div className="flex items-center gap-x-4 lg:gap-x-6">
 								{/* Elements on the right end of the Header go here */}
 							</div>
 						</div>
 					</div>
 
-					<main className="py-6">
+					<main className="bg-gray-200 py-6">
 						<div className="px-4 sm:px-6 lg:px-8 lg:flex lg:flex-1">
 							<Card className="min-w-md overflow-auto md:max-w-none md:my-4 lg:min-h-[780px] lg:max-h-[780px] lg:mx-4 lg:max-w-xl">
-								<h1 className="text-2xl mb-6">Trades</h1>
+								<h1 className="text-black text-2xl mb-6">Trades</h1>
 								<List>
-									{cities.map((item) => (
-										<ListItem key={item.city}>
-											<span>{item.city}</span>
-											<span>{item.rating}</span>
-											<span>{item.rating}</span>
-											<span>{item.rating}</span>
+									{
+										// data.map((trade: Trade) => (
+										// 	<ListItem key={trade.exitDatetime.toString()}>
+										// 		<span>{trade.exitDatetime.toString()}</span>
+										// 		<span>{trade.entryPrice.toString()}</span>
+										// 		<span>{trade.exitPrice.toString()}</span>
+										// 		<span>{(trade.profitPercent * 100).toString()}</span>
+										// 	</ListItem>
+										// ))
+									}
+									{data.map((trade: Trade) => (
+										<ListItem
+											key={trade.exitDatetime.toString()}
+											className="text-black">
+											<span>{trade.exitDatetime.toString()}</span>
+											<span>{trade.entryPrice.toString()}</span>
+											<span>{trade.exitPrice.toString()}</span>
+											<span>{(trade.profitPercent * 100).toString()}%</span>
 										</ListItem>
 									))}
 								</List>
@@ -544,7 +552,9 @@ export default () => {
 												className="space-x-0.5"
 												justifyContent="start"
 												alignItems="center">
-												<h1 className="  text-2xl">Performance History</h1>
+												<h1 className="text-black text-2xl">
+													Performance History
+												</h1>
 												{/* <Icon
 													icon={InformationCircleIcon}
 													variant="simple"
@@ -581,7 +591,7 @@ export default () => {
 								</Card>
 
 								<Card className="max-w-xs mx-auto mt-10">
-									<h1 className="mb-3">Performance</h1>
+									<h1 className="text-black mb-3">Performance</h1>
 									<Flex className="flex-row">
 										{/* <Metric>{performanceFormatter(calcPerformanceNumbers())}</Metric> */}
 										<Metric>
