@@ -13,6 +13,8 @@ import {
 	Card,
 	List,
 	ListItem,
+	Metric,
+	BadgeDelta,
 } from "@tremor/react";
 import { Dialog, Menu, Transition } from "@headlessui/react";
 import {
@@ -113,6 +115,54 @@ export const performance: DailyPerformance[] = [
 ];
 
 const cities = [
+	{
+		city: "Athens",
+		rating: "2 open PR",
+	},
+	{
+		city: "Luzern",
+		rating: "1 open PR",
+	},
+	{
+		city: "Zürich",
+		rating: "0 open PR",
+	},
+	{
+		city: "Vienna",
+		rating: "1 open PR",
+	},
+	{
+		city: "Ermatingen",
+		rating: "0 open PR",
+	},
+	{
+		city: "Lisbon",
+		rating: "0 open PR",
+	},
+	{
+		city: "Athens",
+		rating: "2 open PR",
+	},
+	{
+		city: "Luzern",
+		rating: "1 open PR",
+	},
+	{
+		city: "Zürich",
+		rating: "0 open PR",
+	},
+	{
+		city: "Vienna",
+		rating: "1 open PR",
+	},
+	{
+		city: "Ermatingen",
+		rating: "0 open PR",
+	},
+	{
+		city: "Lisbon",
+		rating: "0 open PR",
+	},
 	{
 		city: "Athens",
 		rating: "2 open PR",
@@ -453,9 +503,7 @@ export default () => {
 
 					<main className="py-6">
 						<div className="px-4 sm:px-6 lg:px-8 lg:flex lg:flex-1">
-							{/*  */}
-							{/* Content goes here */}
-							<Card className="min-w-md max-w-xl md:max-w-none md:my-4 lg:h-[800px] lg:mx-4">
+							<Card className="min-w-md overflow-auto md:max-w-none md:my-4 lg:min-h-[780px] lg:max-h-[780px] lg:mx-4 lg:max-w-xl">
 								<h1 className="text-2xl mb-6">Trades</h1>
 								<List>
 									{cities.map((item) => (
@@ -468,49 +516,71 @@ export default () => {
 									))}
 								</List>
 							</Card>
-							<Card className="md:my-4 lg:mx-4 lg:h-[450px]">
-								<div className="md:flex justify-between">
-									<div>
-										<Flex
-											className="space-x-0.5"
-											justifyContent="start"
-											alignItems="center">
-											<h1 className="  text-2xl">Performance History</h1>
-											<Icon
-												icon={InformationCircleIcon}
-												variant="simple"
-												tooltip="Shows daily increase or decrease of particular domain"
-											/>
-										</Flex>
-										<Text> Daily change per domain </Text>
+
+							<div>
+								<Card className="md:my-4 lg:mx-4 lg:h-[450px] lg:max-w-[930px]">
+									<div className="md:flex justify-between">
+										<div>
+											<Flex
+												className="space-x-0.5"
+												justifyContent="start"
+												alignItems="center">
+												<h1 className="  text-2xl">Performance History</h1>
+												<Icon
+													icon={InformationCircleIcon}
+													variant="simple"
+													tooltip="Shows daily increase or decrease of particular domain"
+												/>
+											</Flex>
+											<Text> Daily change per domain </Text>
+										</div>
+										<div>
+											<TabGroup
+												index={selectedIndex}
+												onIndexChange={setSelectedIndex}>
+												<TabList color="gray" variant="solid">
+													<Tab>Sales</Tab>
+													<Tab>Profit</Tab>
+													<Tab>Customers</Tab>
+												</TabList>
+											</TabGroup>
+										</div>
 									</div>
-									<div>
-										<TabGroup
-											index={selectedIndex}
-											onIndexChange={setSelectedIndex}>
-											<TabList color="gray" variant="solid">
-												<Tab>Sales</Tab>
-												<Tab>Profit</Tab>
-												<Tab>Customers</Tab>
-											</TabList>
-										</TabGroup>
+									{/* web */}
+									<div className="mt-8 hidden sm:block">
+										<AreaChart {...areaChartArgs} />
 									</div>
-								</div>
-								{/* web */}
-								<div className="mt-8 hidden sm:block">
-									<AreaChart {...areaChartArgs} />
-								</div>
-								{/* mobile */}
-								<div className="mt-8 sm:hidden">
-									<AreaChart
-										{...areaChartArgs}
-										startEndOnly={true}
-										showGradient={false}
-										showYAxis={false}
-									/>
-								</div>
-							</Card>
-							{/*  */}
+									{/* mobile */}
+									<div className="mt-8 sm:hidden">
+										<AreaChart
+											{...areaChartArgs}
+											startEndOnly={true}
+											showGradient={false}
+											showYAxis={false}
+										/>
+									</div>
+								</Card>
+
+								<Card className="max-w-xs mx-auto mt-10">
+									<h1 className="mb-3">Performance</h1>
+									<Flex className="flex-row">
+										{/* <Metric>{performanceFormatter(calcPerformanceNumbers())}</Metric> */}
+										<Metric>
+											$ 34,743
+											{/* {performanceFormatter(performanceNumbers[timeframe])} */}
+										</Metric>
+										<BadgeDelta
+											deltaType="increase"
+											// deltaType={
+											// 	performance[timeframe] >= 0 ? "increase" : "decrease"
+											// }
+										>
+											12%
+											{/* {percentageFormatter(performance[timeframe])} */}
+										</BadgeDelta>
+									</Flex>
+								</Card>
+							</div>
 						</div>
 					</main>
 				</div>
