@@ -1,5 +1,6 @@
 "use client";
 import { Fragment, useState } from "react";
+import useSWR from "swr";
 import {
 	Flex,
 	Title,
@@ -140,84 +141,102 @@ const cities = [
 		rating: "0 open PR",
 	},
 	{
-		city: "Athens",
+		city: "Chicago",
 		rating: "2 open PR",
 	},
 	{
-		city: "Luzern",
+		city: "Atlanta",
 		rating: "1 open PR",
 	},
 	{
-		city: "Zürich",
+		city: "Manassas",
 		rating: "0 open PR",
 	},
 	{
-		city: "Vienna",
+		city: "Montreal",
 		rating: "1 open PR",
 	},
 	{
-		city: "Ermatingen",
+		city: "Boise",
 		rating: "0 open PR",
 	},
 	{
-		city: "Lisbon",
+		city: "Providence",
 		rating: "0 open PR",
 	},
 	{
-		city: "Athens",
+		city: "Toronto",
 		rating: "2 open PR",
 	},
 	{
-		city: "Luzern",
+		city: "Singapore",
 		rating: "1 open PR",
 	},
 	{
-		city: "Zürich",
+		city: "Moscow",
 		rating: "0 open PR",
 	},
 	{
-		city: "Vienna",
+		city: "Kyiv",
 		rating: "1 open PR",
 	},
 	{
-		city: "Ermatingen",
+		city: "Rome",
 		rating: "0 open PR",
 	},
 	{
-		city: "Lisbon",
+		city: "Madrid",
 		rating: "0 open PR",
 	},
 	{
-		city: "Athens",
+		city: "Seattle",
 		rating: "2 open PR",
 	},
 	{
-		city: "Luzern",
+		city: "Amsterdam",
 		rating: "1 open PR",
 	},
 	{
-		city: "Zürich",
+		city: "Berlin",
 		rating: "0 open PR",
 	},
 	{
-		city: "Vienna",
+		city: "San Francisco",
 		rating: "1 open PR",
 	},
 	{
-		city: "Ermatingen",
+		city: "Austin",
 		rating: "0 open PR",
 	},
 	{
-		city: "Lisbon",
+		city: "Nashville",
 		rating: "0 open PR",
 	},
 ];
 
+const fetcher = ([url, algo]: [string, string]) =>
+	fetch(url, {
+		method: "POST",
+		body: JSON.stringify({
+			algo,
+		}),
+		headers: {
+			"Content-Type": "application/json",
+		},
+	}).then((res) => res.json());
+
 export default () => {
 	const [sidebarOpen, setSidebarOpen] = useState(false);
+	const [selectedAlgo, setSelectedAlgo] = useState("example");
 
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const selectedKpi = kpiList[selectedIndex];
+
+	const { data, error, isLoading } = useSWR(["/api/", selectedAlgo], fetcher);
+	console.log(data);
+
+	// if (error) return <div>failed to load</div>;
+	// if (isLoading) return <div>Loading...</div>;
 
 	const areaChartArgs = {
 		className: "mt-5 h-72",
@@ -526,11 +545,11 @@ export default () => {
 												justifyContent="start"
 												alignItems="center">
 												<h1 className="  text-2xl">Performance History</h1>
-												<Icon
+												{/* <Icon
 													icon={InformationCircleIcon}
 													variant="simple"
 													tooltip="Shows daily increase or decrease of particular domain"
-												/>
+												/> */}
 											</Flex>
 											<Text> Daily change per domain </Text>
 										</div>
