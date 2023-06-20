@@ -245,12 +245,18 @@ const isSearchEnabled = () => {
 
 export default () => {
 	const [sidebarOpen, setSidebarOpen] = useState(false);
-	const [selectedAlgo, setSelectedAlgo] = useState("example");
+	const [selectedAlgo, setSelectedAlgo] = useState("Example");
 
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const selectedKpi = kpiList[selectedIndex];
 
 	const { data, error, isLoading } = useSWR(["/api/", selectedAlgo], fetcher);
+
+	const handleSidebar = async (selectedAlgo: string) => {
+		setSelectedAlgo(selectedAlgo);
+
+		// const res = await fetcher(["/api/", selectedAlgo]);
+	};
 
 	if (error) return <div>failed to load</div>;
 	if (isLoading) return <div>Loading...</div>;
@@ -341,16 +347,16 @@ export default () => {
 													<ul role="list" className="-mx-2 space-y-1">
 														{navigation.map((item) => (
 															<li key={item.name}>
-																<a
-																	href={item.href}
+																<div
+																	onClick={() => handleSidebar(item.name)}
 																	className={classNames(
-																		item.current
+																		item.name == selectedAlgo
 																			? "bg-gray-50 text-indigo-600"
 																			: "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
 																		"group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
 																	)}>
 																	{item.name}
-																</a>
+																</div>
 															</li>
 														))}
 													</ul>
@@ -365,7 +371,7 @@ export default () => {
 																<a
 																	href={team.href}
 																	className={classNames(
-																		team.current
+																		team.name == selectedAlgo
 																			? "bg-gray-50 text-indigo-600"
 																			: "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
 																		"group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
@@ -423,16 +429,16 @@ export default () => {
 									<ul role="list" className="-mx-2 space-y-1">
 										{navigation.map((item) => (
 											<li key={item.name}>
-												<a
-													href={item.href}
+												<div
+													onClick={() => handleSidebar(item.name)}
 													className={classNames(
-														item.current
+														item.name == selectedAlgo
 															? "bg-gray-50 text-indigo-600"
 															: "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
 														"group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
 													)}>
 													{item.name}
-												</a>
+												</div>
 											</li>
 										))}
 									</ul>
@@ -444,17 +450,17 @@ export default () => {
 									<ul role="list" className="-mx-2 mt-2 space-y-1">
 										{teams.map((team) => (
 											<li key={team.name}>
-												<a
-													href={team.href}
+												<div
+													onClick={() => handleSidebar(team.name)}
 													className={classNames(
-														team.current
+														team.name == selectedAlgo
 															? "bg-gray-50 text-indigo-600"
 															: "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
 														"group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
 													)}>
 													<span>{/* small spacing before team name */}</span>
 													<span className="truncate">{team.name}</span>
-												</a>
+												</div>
 											</li>
 										))}
 									</ul>
