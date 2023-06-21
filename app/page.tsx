@@ -1,6 +1,6 @@
 "use client";
 import { Fragment, useState } from "react";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import {
 	Flex,
 	Title,
@@ -50,15 +50,71 @@ interface Trade {
 }
 
 const navigation = [
-	{ name: "Example", href: "#", current: false },
-	{ name: "New Monthly High", href: "#", current: true },
-	{ name: "3 MA Crossover", href: "#", current: false },
-	{ name: "BB Reversal 1min", href: "#", current: false },
+	{ _id: 1, name: "Example", algo: "", href: "#", current: true },
+	{
+		_id: 2,
+		name: "New Monthly High",
+		algo: "new-monthly-high-1mon-btc-v0_1",
+		href: "#",
+		current: true,
+	},
+	{
+		_id: 3,
+		name: "3 MA Crossover",
+		algo: "3-ma-cross-30min-btc-v0_1",
+		href: "#",
+		current: false,
+	},
+	{
+		_id: 4,
+		name: "BB Reversal 1min",
+		algo: "bb-reversal-1min-btc-v0_1",
+		href: "#",
+		current: false,
+	},
+	{
+		_id: 5,
+		name: "Armor Plated",
+		algo: "option-wheel-1w-btc",
+		href: "#",
+		current: false,
+	},
 ];
-const teams = [
-	{ id: 1, name: "Heroicons", href: "#", current: false },
-	{ id: 2, name: "Tailwind Labs", href: "#", current: false },
-	{ id: 3, name: "Workcation", href: "#", current: false },
+
+const algorithmList = [
+	"",
+	"",
+	"new-monthly-high-1mon-btc-v0_1",
+	"3-ma-cross-30m-BTC-v0_1",
+	"bb-reversal-1min-btc-v0_1",
+	"option-wheel-1w-btc",
+	"btc-chimera-total",
+	"'new-monthly-high-1mon-btc-chimera-v0_1'",
+	"'bb-reversal-1min-btc-chimera-v0_1'",
+];
+
+const btcChimeraAlgos = [
+	{
+		_id: 6,
+		name: "Total",
+		algo: "new-monthly-high-1mon-btc-chimera-v0_1",
+		href: "#",
+		current: false,
+	},
+	{
+		_id: 7,
+		name: "New Monthly High",
+		algo: "new-monthly-high-1mon-btc-chimera-v0_1",
+		href: "#",
+		current: false,
+	},
+	{
+		_id: 8,
+		name: "BB Reversal 1min",
+		algo: "bb-reversal-1min-btc-chimera-v0_1",
+		href: "#",
+		current: false,
+	},
 ];
 
 function classNames(...classes: any) {
@@ -95,132 +151,6 @@ export type DailyPerformance = {
 	Customers: number;
 };
 
-export const performance: DailyPerformance[] = [
-	{
-		date: "2023-05-01",
-		Sales: 900.73,
-		Profit: 173,
-		Customers: 73,
-	},
-	{
-		date: "2023-05-02",
-		Sales: 1000.74,
-		Profit: 174.6,
-		Customers: 74,
-	},
-	{
-		date: "2023-05-03",
-		Sales: 1100.93,
-		Profit: 293.1,
-		Customers: 293,
-	},
-	{
-		date: "2023-05-04",
-		Sales: 1200.9,
-		Profit: 290.2,
-		Customers: 29,
-	},
-];
-
-const cities = [
-	{
-		city: "Athens",
-		rating: "2 open PR",
-	},
-	{
-		city: "Luzern",
-		rating: "1 open PR",
-	},
-	{
-		city: "Zürich",
-		rating: "0 open PR",
-	},
-	{
-		city: "Vienna",
-		rating: "1 open PR",
-	},
-	{
-		city: "Ermatingen",
-		rating: "0 open PR",
-	},
-	{
-		city: "Lisbon",
-		rating: "0 open PR",
-	},
-	{
-		city: "Chicago",
-		rating: "2 open PR",
-	},
-	{
-		city: "Atlanta",
-		rating: "1 open PR",
-	},
-	{
-		city: "Manassas",
-		rating: "0 open PR",
-	},
-	{
-		city: "Montreal",
-		rating: "1 open PR",
-	},
-	{
-		city: "Boise",
-		rating: "0 open PR",
-	},
-	{
-		city: "Providence",
-		rating: "0 open PR",
-	},
-	{
-		city: "Toronto",
-		rating: "2 open PR",
-	},
-	{
-		city: "Singapore",
-		rating: "1 open PR",
-	},
-	{
-		city: "Moscow",
-		rating: "0 open PR",
-	},
-	{
-		city: "Kyiv",
-		rating: "1 open PR",
-	},
-	{
-		city: "Rome",
-		rating: "0 open PR",
-	},
-	{
-		city: "Madrid",
-		rating: "0 open PR",
-	},
-	{
-		city: "Seattle",
-		rating: "2 open PR",
-	},
-	{
-		city: "Amsterdam",
-		rating: "1 open PR",
-	},
-	{
-		city: "Berlin",
-		rating: "0 open PR",
-	},
-	{
-		city: "San Francisco",
-		rating: "1 open PR",
-	},
-	{
-		city: "Austin",
-		rating: "0 open PR",
-	},
-	{
-		city: "Nashville",
-		rating: "0 open PR",
-	},
-];
-
 const fetcher = ([url, algo]: [string, string]) =>
 	fetch(url, {
 		method: "POST",
@@ -245,17 +175,20 @@ const isSearchEnabled = () => {
 
 export default () => {
 	const [sidebarOpen, setSidebarOpen] = useState(false);
-	const [selectedAlgo, setSelectedAlgo] = useState("Example");
+	const [selectedAlgo, setSelectedAlgo] = useState(1);
 
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const selectedKpi = kpiList[selectedIndex];
 
-	const { data, error, isLoading } = useSWR(["/api/", selectedAlgo], fetcher);
+	const { data, error, isLoading, mutate } = useSWR(
+		["/api/", algorithmList[selectedAlgo]],
+		fetcher
+	);
 
-	const handleSidebar = async (selectedAlgo: string) => {
+	const handleSidebar = async (selectedAlgo: number) => {
 		setSelectedAlgo(selectedAlgo);
 
-		// const res = await fetcher(["/api/", selectedAlgo]);
+		mutate();
 	};
 
 	if (error) return <div>failed to load</div>;
@@ -348,9 +281,9 @@ export default () => {
 														{navigation.map((item) => (
 															<li key={item.name}>
 																<div
-																	onClick={() => handleSidebar(item.name)}
+																	onClick={() => handleSidebar(item._id)}
 																	className={classNames(
-																		item.name == selectedAlgo
+																		item._id == selectedAlgo
 																			? "bg-gray-50 text-indigo-600"
 																			: "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
 																		"group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
@@ -366,28 +299,19 @@ export default () => {
 														BTC Chimera
 													</div>
 													<ul role="list" className="-mx-2 mt-2 space-y-1">
-														{teams.map((team) => (
-															<li key={team.name}>
-																<a
-																	href={team.href}
+														{btcChimeraAlgos.map((algo) => (
+															<li key={algo.name}>
+																<div
+																	onClick={() => handleSidebar(algo._id)}
 																	className={classNames(
-																		team.name == selectedAlgo
+																		algo._id == selectedAlgo
 																			? "bg-gray-50 text-indigo-600"
 																			: "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
 																		"group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
 																	)}>
-																	<span
-																	// className={classNames(
-																	// 	team.current
-																	// 		? "text-indigo-600 border-indigo-600"
-																	// 		: "text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600",
-																	// 	"flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white"
-																	// )}
-																	>
-																		{/* {team.initial} */}
-																	</span>
-																	<span className="truncate">{team.name}</span>
-																</a>
+																	<span>{/* {team.initial} */}</span>
+																	<span className="truncate">{algo.name}</span>
+																</div>
 															</li>
 														))}
 													</ul>
@@ -430,9 +354,9 @@ export default () => {
 										{navigation.map((item) => (
 											<li key={item.name}>
 												<div
-													onClick={() => handleSidebar(item.name)}
+													onClick={() => handleSidebar(item._id)}
 													className={classNames(
-														item.name == selectedAlgo
+														item._id == selectedAlgo
 															? "bg-gray-50 text-indigo-600"
 															: "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
 														"group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
@@ -445,21 +369,21 @@ export default () => {
 								</li>
 								<li>
 									<div className="text-xl leading-6 text-black">
-										BTC-Chimera
+										BTC Chimera
 									</div>
 									<ul role="list" className="-mx-2 mt-2 space-y-1">
-										{teams.map((team) => (
-											<li key={team.name}>
+										{btcChimeraAlgos.map((algo) => (
+											<li key={algo.name}>
 												<div
-													onClick={() => handleSidebar(team.name)}
+													onClick={() => handleSidebar(algo._id)}
 													className={classNames(
-														team.name == selectedAlgo
+														algo._id == selectedAlgo
 															? "bg-gray-50 text-indigo-600"
 															: "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
 														"group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
 													)}>
-													<span>{/* small spacing before team name */}</span>
-													<span className="truncate">{team.name}</span>
+													<span>{/* small spacing before algo name */}</span>
+													<span className="truncate">{algo.name}</span>
 												</div>
 											</li>
 										))}
@@ -522,7 +446,7 @@ export default () => {
 						</div>
 					</div>
 
-					<main className="bg-gray-200 py-6">
+					<main className="bg-gray-100 py-6">
 						<div className="px-4 sm:px-6 lg:px-8 lg:flex lg:flex-1">
 							<Card className="min-w-md overflow-auto md:max-w-none md:my-4 lg:min-h-[780px] lg:max-h-[780px] lg:mx-4 lg:max-w-xl">
 								<h1 className="text-black text-2xl mb-6">Trades</h1>
