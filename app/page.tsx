@@ -162,6 +162,22 @@ const fetcher = ([url, algo]: [string, string]) =>
 		},
 	}).then((res) => res.json());
 
+const rollingAggregator = (data: Trade[]) => {
+	var newData: any = [];
+	const rollingAggregator = data.reduce(
+		(acc: any, trade: Trade) => {
+			const { profitAbsolute, profitPercent } = trade;
+			acc.profitAbsolute += profitAbsolute;
+			acc.profitPercent += profitPercent;
+			newData.push({ ...acc });
+			return acc;
+		},
+		{ profitAbsolute: 0, profitPercent: 0 }
+	);
+	console.log(newData);
+	return newData;
+};
+
 const isSearchEnabled = () => {
 	const searchFeatureFlag = process.env.PUBLIC_SEARCH_ENABLED;
 	if (
@@ -197,7 +213,7 @@ export default () => {
 	const areaChartArgs = {
 		className: "mt-5 h-72",
 		// data: performance,
-		data,
+		data: rollingAggregator(data),
 		index: "exitDatetime",
 		// categories: [selectedKpi],
 		categories: ["profitAbsolute"],
