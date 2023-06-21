@@ -49,31 +49,31 @@ interface Trade {
 	profitPercent: number;
 }
 
+// TODO: Pull list of algos from the DB automatically
 const navigation = [
-	{ _id: 1, name: "Example", algo: "", href: "#", current: true },
 	{
-		_id: 2,
+		_id: 1,
 		name: "New Monthly High",
 		algo: "new-monthly-high-1mon-btc-v0_1",
 		href: "#",
 		current: true,
 	},
 	{
-		_id: 3,
+		_id: 2,
 		name: "3 MA Crossover",
 		algo: "3-ma-cross-30min-btc-v0_1",
 		href: "#",
 		current: false,
 	},
 	{
-		_id: 4,
+		_id: 3,
 		name: "BB Reversal 1min",
 		algo: "bb-reversal-1min-btc-v0_1",
 		href: "#",
 		current: false,
 	},
 	{
-		_id: 5,
+		_id: 4,
 		name: "Armor Plated",
 		algo: "option-wheel-1w-btc",
 		href: "#",
@@ -82,7 +82,6 @@ const navigation = [
 ];
 
 const algorithmList = [
-	"",
 	"",
 	"new-monthly-high-1mon-btc-v0_1",
 	"3-ma-cross-30m-BTC-v0_1",
@@ -95,21 +94,21 @@ const algorithmList = [
 
 const btcChimeraAlgos = [
 	{
-		_id: 6,
+		_id: 5,
 		name: "Total",
 		algo: "new-monthly-high-1mon-btc-chimera-v0_1",
 		href: "#",
 		current: false,
 	},
 	{
-		_id: 7,
+		_id: 6,
 		name: "New Monthly High",
 		algo: "new-monthly-high-1mon-btc-chimera-v0_1",
 		href: "#",
 		current: false,
 	},
 	{
-		_id: 8,
+		_id: 7,
 		name: "BB Reversal 1min",
 		algo: "bb-reversal-1min-btc-chimera-v0_1",
 		href: "#",
@@ -164,17 +163,19 @@ const fetcher = ([url, algo]: [string, string]) =>
 
 const rollingAggregator = (data: Trade[]) => {
 	var newData: any = [];
+	// if (data?.length == 0) {
 	const rollingAggregator = data.reduce(
 		(acc: any, trade: Trade) => {
-			const { profitAbsolute, profitPercent } = trade;
+			const { profitAbsolute, exitPrice, entryPrice } = trade;
 			acc.profitAbsolute += profitAbsolute;
-			acc.profitPercent += profitPercent;
+			acc.profitPercent += exitPrice / entryPrice - 1;
 			newData.push({ ...acc });
 			return acc;
 		},
 		{ profitAbsolute: 0, profitPercent: 0 }
 	);
-	console.log(newData);
+	// }
+	// console.log(newData);
 	return newData;
 };
 
@@ -205,6 +206,8 @@ export default () => {
 		setSelectedAlgo(selectedAlgo);
 
 		mutate();
+		totalProfit = rollingAggregator(data).reverse()[0];
+		reverseData = data.reverse();
 	};
 
 	if (error) return <div>failed to load</div>;
@@ -222,6 +225,10 @@ export default () => {
 		valueFormatter: formatters[selectedKpi],
 		yAxisWidth: 56,
 	};
+
+	// Because .reverse() mutates `data`, order matters here
+	var totalProfit = rollingAggregator(data).reverse()[0];
+	var reverseData = data?.reverse();
 
 	return (
 		<>
@@ -458,6 +465,7 @@ export default () => {
 							)}
 							<div className="flex items-center gap-x-4 lg:gap-x-6">
 								{/* Elements on the right end of the Header go here */}
+								{/* TODO: Add Toggle to only show live trades */}
 							</div>
 						</div>
 					</div>
@@ -466,25 +474,24 @@ export default () => {
 						<div className="px-4 sm:px-6 lg:px-8 lg:flex lg:flex-1">
 							<Card className="min-w-md overflow-auto md:max-w-none md:my-4 lg:min-h-[780px] lg:max-h-[780px] lg:mx-4 lg:max-w-xl">
 								<h1 className="text-black text-2xl mb-6">Trades</h1>
+								{/* TODO: Add column headers to Trades */}
 								<List>
-									{
-										// data.map((trade: Trade) => (
-										// 	<ListItem key={trade.exitDatetime.toString()}>
-										// 		<span>{trade.exitDatetime.toString()}</span>
-										// 		<span>{trade.entryPrice.toString()}</span>
-										// 		<span>{trade.exitPrice.toString()}</span>
-										// 		<span>{(trade.profitPercent * 100).toString()}</span>
-										// 	</ListItem>
-										// ))
-									}
-									{data.map((trade: Trade) => (
+									{reverseData.map((trade: Trade) => (
 										<ListItem
 											key={trade.exitDatetime.toString()}
 											className="text-black">
+											{/* TODO: Add Date formatter & maybe entryDatetime */}
 											<span>{trade.exitDatetime.toString()}</span>
+											{/* TODO: Add Price formatter */}
 											<span>{trade.entryPrice.toString()}</span>
 											<span>{trade.exitPrice.toString()}</span>
-											<span>{(trade.profitPercent * 100).toString()}%</span>
+											<span>
+												{(
+													(trade.exitPrice / trade.entryPrice - 1) *
+													100
+												).toFixed(2)}
+												%
+											</span>
 										</ListItem>
 									))}
 								</List>
@@ -509,7 +516,9 @@ export default () => {
 											</Flex>
 											<Text> Daily change per domain </Text>
 										</div>
-										<div>
+										{/* TODO: Allow for dynamic timeframe selection */}
+										{/* TODO: Create Toggle to show dollars '$' or percent '%'*/}
+										{/* <div>
 											<TabGroup
 												index={selectedIndex}
 												onIndexChange={setSelectedIndex}>
@@ -519,7 +528,7 @@ export default () => {
 													<Tab>Customers</Tab>
 												</TabList>
 											</TabGroup>
-										</div>
+										</div> */}
 									</div>
 									{/* web */}
 									<div className="mt-8 hidden sm:block">
@@ -541,16 +550,27 @@ export default () => {
 									<Flex className="flex-row">
 										{/* <Metric>{performanceFormatter(calcPerformanceNumbers())}</Metric> */}
 										<Metric>
-											$ 34,743
-											{/* {performanceFormatter(performanceNumbers[timeframe])} */}
+											{/* $ 34,743 */}
+											{/* TODO: Add dollar formatter  */}
+											{totalProfit?.profitAbsolute}
 										</Metric>
 										<BadgeDelta
-											deltaType="increase"
-											// deltaType={
-											// 	performance[timeframe] >= 0 ? "increase" : "decrease"
-											// }
-										>
-											12%
+											// deltaType="increase"
+											deltaType={
+												// rollingAggregator(data).reverse()[0] &&
+												// rollingAggregator(data).reverse()[0].profitPercent *
+												// 	100
+												totalProfit?.profitPercent * 100 >= 0
+													? "increase"
+													: "decrease"
+											}>
+											{/* 12% */}
+											{/* {rollingAggregator(data).reverse()[0] &&
+												(
+													rollingAggregator(data).reverse()[0].profitPercent *
+													100
+												).toFixed(2)} */}
+											{(totalProfit?.profitPercent * 100).toFixed(2)}%
 											{/* {percentageFormatter(performance[timeframe])} */}
 										</BadgeDelta>
 									</Flex>
